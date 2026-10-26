@@ -9,7 +9,12 @@
       "@massimiliano-dev/fatturapa-fattureincloud",
       "@massimiliano-dev/fatturapa-openapi-it",
       "@massimiliano-dev/fatturapa-nestjs",
-      "@massimiliano-dev/fatturapa-cli"
+      "@massimiliano-dev/fatturapa-cli",
+      "@massimiliano-dev/fatturapa-invoicetronic",
+      "@massimiliano-dev/fatturapa-acube",
+      "@massimiliano-dev/fatturapa-fattura-elettronica-api",
+      "@massimiliano-dev/fatturapa-aruba",
+      "@massimiliano-dev/fatturapa-keliweb"
     ]
   ],
   "linked": [],

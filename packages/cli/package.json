@@ -53,7 +53,12 @@
     "@massimiliano-dev/fatturapa-validator": "workspace:^",
     "@massimiliano-dev/fatturapa-fattureincloud": "workspace:^",
     "@massimiliano-dev/fatturapa-openapi-it": "workspace:^",
-    "commander": "^15.0.0"
+    "commander": "^15.0.0",
+    "@massimiliano-dev/fatturapa-invoicetronic": "workspace:^",
+    "@massimiliano-dev/fatturapa-acube": "workspace:^",
+    "@massimiliano-dev/fatturapa-fattura-elettronica-api": "workspace:^",
+    "@massimiliano-dev/fatturapa-aruba": "workspace:^",
+    "@massimiliano-dev/fatturapa-keliweb": "workspace:^"
   },
   "bin": {
     "fatturapa": "./dist/bin.js"

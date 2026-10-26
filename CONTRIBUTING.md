@@ -35,6 +35,12 @@ Create `packages/<provider>` implementing `SdiProvider` from `fatturapa-core`:
 - Openapi.it sandbox: `OPENAPI_IT_SANDBOX_TOKEN`, `OPENAPI_IT_SANDBOX_FISCAL_ID` (a business registry
   configured in the sandbox). Sends the synthetic invoice.
 - Fatture in Cloud: `FIC_ACCESS_TOKEN`, `FIC_COMPANY_ID` of a dedicated test company. Read-only.
+- Invoicetronic: `INVOICETRONIC_SANDBOX_API_KEY` (`ik_test_…`). Sends the synthetic invoice twice with the
+  same idempotency key.
+- A-Cube: `ACUBE_SANDBOX_EMAIL`, `ACUBE_SANDBOX_PASSWORD`. Read-only.
+- Fattura Elettronica API: `FEA_TEST_CLIENT_ID`, `FEA_TEST_CLIENT_SECRET`. Read-only.
+- Aruba: `ARUBA_DEMO_USERNAME`, `ARUBA_DEMO_PASSWORD` (demo environment). Read-only.
+- Keliweb has no test environment: no live test.
 
 In CI they run only when the repository variable `FATTURAPA_LIVE` is `sandbox`, never for pull requests, in
 the `sandbox` environment (configure required reviewers).

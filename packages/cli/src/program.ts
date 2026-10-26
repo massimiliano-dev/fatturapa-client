@@ -2,7 +2,7 @@ import { Command, CommanderError, InvalidArgumentError, Option } from 'commander
 import { buildSdiFileName, FatturaPAError, redact } from '@massimiliano-dev/fatturapa-core';
 import { inspectCommand } from './commands/inspect.js';
 import { notificationCommand } from './commands/notification.js';
-import { sendCommand, statusCommand } from './commands/providers.js';
+import { PROVIDERS, sendCommand, statusCommand } from './commands/providers.js';
 import { validateCommand } from './commands/validate.js';
 import { ExitCode, type CliIo } from './io.js';
 
@@ -69,12 +69,10 @@ function buildProgram(io: CliIo, setExit: (code: number) => void): Command {
   const providerOptions = (cmd: Command) =>
     cmd
       .addOption(
-        new Option('--provider <name>', 'SDI intermediary')
-          .choices(['openapi-it', 'fattureincloud'])
-          .makeOptionMandatory(),
+        new Option('--provider <name>', 'SDI intermediary').choices([...PROVIDERS]).makeOptionMandatory(),
       )
       .addOption(
-        new Option('--env <env>', 'Openapi.it environment')
+        new Option('--env <env>', 'sandbox (sandbox, FEA test, Aruba demo) or production')
           .choices(['sandbox', 'production'])
           .default('sandbox'),
       )
@@ -86,13 +84,15 @@ function buildProgram(io: CliIo, setExit: (code: number) => void): Command {
       .command('send')
       .argument('<file>', 'unsigned invoice XML')
       .description(
-        'Validate locally, then send through the provider. Token from OPENAPI_IT_TOKEN, never from flags.',
+        'Validate locally, then send through the provider. Credentials only from the environment:\n' +
+          'OPENAPI_IT_TOKEN, INVOICETRONIC_API_KEY, ACUBE_EMAIL + ACUBE_PASSWORD, FEA_CLIENT_ID + FEA_CLIENT_SECRET,\n' +
+          'ARUBA_USERNAME + ARUBA_PASSWORD, KELIWEB_CLIENT_ID + KELIWEB_CLIENT_SECRET + KELIWEB_USERNAME + KELIWEB_PASSWORD.',
       ),
   )
     .option('--schemas <dir>', 'schemas folder for the local validation')
     .option('--no-validate', 'skip the local validation (not recommended)')
-    .option('--signature', 'let the provider sign the invoice')
-    .option('--legal-storage', 'send to legal storage (conservazione)')
+    .option('--signature', 'let the provider sign the invoice (openapi-it, invoicetronic)')
+    .option('--legal-storage', 'send to legal storage (conservazione, openapi-it)')
     .option('--today <date>', 'reference date for rule 00403', isoDate)
     .option('--dry-run', 'validate and print what would be sent, without sending')
     .action(async (file: string, options) => setExit(await sendCommand(io, file, options)));

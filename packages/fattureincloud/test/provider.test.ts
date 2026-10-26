@@ -294,6 +294,7 @@ describe('webhooks', () => {
       ['subject', { ...ceHeaders, 'ce-subject': 'company:1', authorization: `Bearer ${jwt(baseClaims)}` }],
       ['app', { ...ceHeaders, authorization: `Bearer ${jwt({ ...baseClaims, aid: 1 })}` }],
       ['missing', { ...ceHeaders }],
+      ['no iat', { ...ceHeaders, authorization: `Bearer ${jwt({ ...baseClaims, iat: undefined })}` }],
     ];
     for (const [label, headers] of cases) {
       expect(
@@ -301,6 +302,13 @@ describe('webhooks', () => {
         label,
       ).toThrow(WebhookVerificationError);
     }
+  });
+
+  it('can limit the token age', () => {
+    const old = jwt({ ...baseClaims, iat: iat - 3600 });
+    const req = { headers: { ...ceHeaders, authorization: `Bearer ${old}` }, body: '{"ids":[1]}' };
+    expect(verifyFicWebhook(req, opts).id).toBe('evt-1');
+    expect(() => verifyFicWebhook(req, { ...opts, maxAgeSeconds: 300 })).toThrow(/too old/);
   });
 
   it('answers the verification challenge only for authentic requests', () => {

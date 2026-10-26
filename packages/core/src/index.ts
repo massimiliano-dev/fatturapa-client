@@ -84,3 +84,20 @@ export {
   UnsafeXmlError,
   type UnsafeXmlReason,
 } from './errors.js';
+export { TokenCache, type CachedToken, type TokenCacheOptions } from './token-cache.js';
+export {
+  bodyBytes,
+  constantTimeEqual,
+  hmacSha256Hex,
+  MIN_SHARED_SECRET_LENGTH,
+  parseJsonBody,
+  singleHeader,
+  verifyStaticSecret,
+  WebhookAuthenticationError,
+} from './secrets.js';
+export {
+  verifyHttpMessageSignature,
+  type HttpMessageSignatureOptions,
+  type SignedRequest,
+} from './http-signature.js';
+export { ReplayGuard } from './replay-guard.js';

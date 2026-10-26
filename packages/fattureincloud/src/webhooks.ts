@@ -34,6 +34,13 @@ export interface FicWebhookVerifyOptions {
   publicKey?: string | KeyObject;
   /** Allowed clock skew in seconds. Default 60. */
   clockSkewSeconds?: number;
+  /**
+   * Maximum token age (`now - iat`) in seconds. Default: none, the token is accepted until `exp`
+   * (3 hours). Set it to shorten the window in which a leaked token can be replayed, but only if your
+   * deliveries arrive promptly: a refused request is not retried by Fatture in Cloud (4xx are discarded).
+   * TODO(verify) whether retries carry a fresh token.
+   */
+  maxAgeSeconds?: number;
   /** Current time, for tests. */
   now?: Date;
   /** Maximum body size. Default 1 MiB (notifications carry ids only). */
@@ -116,9 +123,16 @@ export function verifyFicWebhookToken(
     throw new WebhookVerificationError('webhook JWT audience does not match the sink URL');
   if (typeof claims.exp !== 'number' || claims.exp + skew < now)
     throw new WebhookVerificationError('webhook JWT expired');
-  if (typeof claims.iat === 'number' && claims.iat - skew > now)
-    throw new WebhookVerificationError('webhook JWT issued in the future');
-  if (options.applicationId !== undefined && String(claims.aid) !== String(options.applicationId)) {
+  if (typeof claims.iat !== 'number') throw new WebhookVerificationError('webhook JWT has no iat');
+  if (claims.iat - skew > now) throw new WebhookVerificationError('webhook JWT issued in the future');
+  if (options.maxAgeSeconds !== undefined && now - claims.iat > options.maxAgeSeconds + skew) {
+    throw new WebhookVerificationError('webhook JWT is too old');
+  }
+  const aid = claims.aid;
+  if (
+    options.applicationId !== undefined &&
+    ((typeof aid !== 'string' && typeof aid !== 'number') || String(aid) !== String(options.applicationId))
+  ) {
     throw new WebhookVerificationError('webhook JWT application id does not match');
   }
   return claims;
@@ -147,9 +161,11 @@ export function handleFicVerification(
 /**
  * Verifies a webhook notification and returns the event. Supports both CloudEvents modes: binary
  * (`ce-*` headers, body = data) and structured (`application/cloudevents+json`). The JWT `jti` must
- * equal the event id and `sub` the event subject, which binds the signature to this event.
+ * equal the event id and `sub` the event subject.
  *
- * Delivery is at-least-once: deduplicate on `id`. The payload has ids only: fetch the resources.
+ * The signature covers only those claims: the event `type`, `time` and `ids` are NOT signed. Treat
+ * them as hints, and reject replays by remembering `id` (= `jti`), e.g. with `ReplayGuard` from
+ * fatturapa-core: delivery is at-least-once anyway. Then fetch the resources through the API.
  */
 export function verifyFicWebhook(
   request: FicWebhookRequest,

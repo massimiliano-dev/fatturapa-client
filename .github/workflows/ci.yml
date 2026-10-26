@@ -81,6 +81,13 @@ jobs:
           OPENAPI_IT_SANDBOX_FISCAL_ID: ${{ secrets.OPENAPI_IT_SANDBOX_FISCAL_ID }}
           FIC_ACCESS_TOKEN: ${{ secrets.FIC_ACCESS_TOKEN }}
           FIC_COMPANY_ID: ${{ secrets.FIC_COMPANY_ID }}
+          INVOICETRONIC_SANDBOX_API_KEY: ${{ secrets.INVOICETRONIC_SANDBOX_API_KEY }}
+          ACUBE_SANDBOX_EMAIL: ${{ secrets.ACUBE_SANDBOX_EMAIL }}
+          ACUBE_SANDBOX_PASSWORD: ${{ secrets.ACUBE_SANDBOX_PASSWORD }}
+          FEA_TEST_CLIENT_ID: ${{ secrets.FEA_TEST_CLIENT_ID }}
+          FEA_TEST_CLIENT_SECRET: ${{ secrets.FEA_TEST_CLIENT_SECRET }}
+          ARUBA_DEMO_USERNAME: ${{ secrets.ARUBA_DEMO_USERNAME }}
+          ARUBA_DEMO_PASSWORD: ${{ secrets.ARUBA_DEMO_PASSWORD }}
 
   audit:
     name: Dependency audit

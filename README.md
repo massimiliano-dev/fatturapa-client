@@ -2,13 +2,13 @@
 
 TypeScript toolkit for Italian electronic invoicing (**FatturaPA** and the **SDI**, Sistema di Interscambio):
 build and parse invoice XML, check it locally against the official XSD and the SDI rejection rules, read
-SDI notifications and signed `.p7m` files, and send invoices through SDI intermediaries
-(**Openapi.it**, **Fatture in Cloud**) behind one `SdiProvider` interface. Includes a NestJS module and a
-`fatturapa` CLI.
+SDI notifications and signed `.p7m` files, and send invoices through seven SDI intermediaries
+(**Openapi.it**, **Fatture in Cloud**, **Invoicetronic**, **A-Cube**, **Fattura Elettronica API**, **Aruba**,
+**Keliweb**) behind one `SdiProvider` interface. Includes a NestJS module and a `fatturapa` CLI.
 
 > [!WARNING]
 > **Unofficial project.** Not affiliated with, endorsed by or supported by the Agenzia delle Entrate,
-> Sogei, Openapi S.p.A. or TeamSystem (Fatture in Cloud). The official technical specifications are the only
+> Sogei or any of the providers it integrates. The official technical specifications are the only
 > authority; the SDI is the final judge of every invoice. Using this software does not make you an
 > accredited channel.
 
@@ -59,14 +59,19 @@ Early release (0.x). ✅ implemented and tested · 🟡 implemented, not yet ver
 
 ## Packages
 
-| npm                                          | What                                                                                    |
-| -------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `@massimiliano-dev/fatturapa-core`           | model, builder, parser, totals, SDI rules, notifications, p7m, `SdiProvider`, redaction |
-| `@massimiliano-dev/fatturapa-validator`      | `createFatturaPAValidator()` (XSD + rules), pinned official schemas                     |
-| `@massimiliano-dev/fatturapa-openapi-it`     | `OpenapiItProvider`, `createOpenapiItToken()`, `verifyOpenapiItCallback()`              |
-| `@massimiliano-dev/fatturapa-fattureincloud` | `FattureInCloudProvider`, OAuth2 helpers, `verifyFicWebhook()`                          |
-| `@massimiliano-dev/fatturapa-nestjs`         | `FatturaPAModule.forRootAsync()`                                                        |
-| `@massimiliano-dev/fatturapa-cli`            | the `fatturapa` command                                                                 |
+| npm                                                   | What                                                                                    |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `@massimiliano-dev/fatturapa-core`                    | model, builder, parser, totals, SDI rules, notifications, p7m, `SdiProvider`, redaction |
+| `@massimiliano-dev/fatturapa-validator`               | `createFatturaPAValidator()` (XSD + rules), pinned official schemas                     |
+| `@massimiliano-dev/fatturapa-openapi-it`              | `OpenapiItProvider`, `createOpenapiItToken()`, `verifyOpenapiItCallback()`              |
+| `@massimiliano-dev/fatturapa-fattureincloud`          | `FattureInCloudProvider`, OAuth2 helpers, `verifyFicWebhook()`                          |
+| `@massimiliano-dev/fatturapa-invoicetronic`           | `InvoicetronicProvider`, `verifyInvoicetronicWebhook()`                                 |
+| `@massimiliano-dev/fatturapa-acube`                   | `AcubeProvider`, `verifyAcubeWebhook()`                                                 |
+| `@massimiliano-dev/fatturapa-fattura-elettronica-api` | `FatturaElettronicaApiProvider`, `verifyFatturaElettronicaApiWebhook()`                 |
+| `@massimiliano-dev/fatturapa-aruba`                   | `ArubaProvider`, `withArubaTransmitter()`, `verifyArubaCallback()`                      |
+| `@massimiliano-dev/fatturapa-keliweb`                 | `KeliwebProvider`                                                                       |
+| `@massimiliano-dev/fatturapa-nestjs`                  | `FatturaPAModule.forRootAsync()`                                                        |
+| `@massimiliano-dev/fatturapa-cli`                     | the `fatturapa` command                                                                 |
 
 ESM only, Node.js ≥ 22.19. No native modules.
 
@@ -188,6 +193,21 @@ Webhooks are signed: `verifyFicWebhook(request, { audience: 'https://your.app/fi
 ES256 JWT (published key), issuer, audience, expiry and binds it to the event id; `handleFicVerification()`
 answers the subscription challenge. Fatture in Cloud has **no sandbox**: test on a dedicated test company.
 
+### The other providers at a glance
+
+All accept the XML produced by this library (`send({ xml })` or `send({ invoice })`).
+
+| Provider                        | Credentials                                                       | Test environment                                                                                       | Extras                                                             | Webhook authenticity                                                                          |
+| ------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `InvoicetronicProvider`         | API key (`ik_test_` / `ik_live_`, Basic)                          | free sandbox with an SDI simulator (`CodiceDestinatario` `SBXRC00`/`SBXMC00`/`SBXNS00` force outcomes) | `idempotencyKey` makes `send` safe to retry                        | HMAC-SHA256 over `t.body`, 5-minute tolerance: `verifyInvoicetronicWebhook`                   |
+| `AcubeProvider`                 | e-mail + password → 24 h JWT (cached)                             | sandbox, never reaches the SDI                                                                         | validate, PDF/HTML/P7M download                                    | Ed25519 HTTP Message Signature (RFC 9421) + body digest, published keys: `verifyAcubeWebhook` |
+| `FatturaElettronicaApiProvider` | client id/secret → Bearer (cached)                                | `ws2.0/test`                                                                                           | notification XML, PDF; rewrites `DatiTrasmissione`                 | static Bearer token only: `verifyFatturaElettronicaApiWebhook`, then re-read                  |
+| `ArubaProvider`                 | panel user → 30 min token + refresh (one login per minute per IP) | demo + SDI simulator                                                                                   | auto-signature, dry run, signed uploads; sets Aruba as transmitter | static API key + Aruba source IPs: `verifyArubaCallback`, then re-read                        |
+| `KeliwebProvider`               | OAuth client + user (password grant)                              | **none**                                                                                               | –                                                                  | no webhooks: poll                                                                             |
+
+Static-secret webhooks authenticate the caller but not the body: always re-read the invoice through the API
+before acting ("fetch, then trust").
+
 ## SDI notifications and signed files
 
 ```ts
@@ -211,27 +231,22 @@ fatturapa inspect IT01234567897_00001.xml.p7m     # summary with masked identifi
 fatturapa notification IT01234567897_00001_NS_001.xml
 fatturapa filename --id IT01234567897 --progressive 42
 OPENAPI_IT_TOKEN=… fatturapa send invoice.xml --provider openapi-it --env sandbox
+INVOICETRONIC_API_KEY=ik_test_… fatturapa send invoice.xml --provider invoicetronic
+fatturapa status IT01879020517_abcde.xml.p7m --provider aruba
 ```
 
-Tokens are read only from environment variables (`OPENAPI_IT_TOKEN`, `FIC_ACCESS_TOKEN`), never from flags.
-Production requires `--confirm-production`.
+Credentials are read only from environment variables, never from flags (`fatturapa send --help` lists them).
+`--env sandbox` selects each provider's test environment; production requires `--confirm-production`, and so
+do Fatture in Cloud and Keliweb, which have none.
 
 ## Other providers
 
-Researched on 2026-10-26 for the next adapters, ranked by how well they can be integrated and tested
-(public docs, sandbox, raw XML, signed webhooks). Not implemented yet.
-
-| Provider                                                                                          | Why                                                                                                     |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| [Invoicetronic](https://invoicetronic.com/en/docs/)                                               | MIT OpenAPI spec, free self-service sandbox with an SDI simulator, raw XML, HMAC-SHA256 webhooks        |
-| [A-Cube](https://docs.acubeapi.com/documentation/italy)                                           | OpenAPI spec, sandbox, raw XML or JSON, Ed25519-signed webhooks (HTTP Message Signatures), preservation |
-| [Fattura Elettronica API](https://www.fattura-elettronica-api.it/documentazione2.0/)              | public pricing, test endpoint, raw XML; webhooks only with a static bearer token                        |
-| [Aruba Fatturazione Elettronica](https://fatturazioneelettronica.aruba.it/apidoc/v2/docs_EN.html) | large user base; no OpenAPI, short-lived tokens, strict rate limits, callbacks for Premium only         |
-
-Not integrable as providers: the Agenzia delle Entrate "Fatture e Corrispettivi" portal (no API; a direct
-SdICoop/SFTP channel needs accreditation), and invoicing apps without a public SDI API (Danea Easyfatt,
-Qonto, Namirial e-invoicing). Adding a provider means implementing `SdiProvider` in a new package: see
-[CONTRIBUTING.md](CONTRIBUTING.md).
+Checked on 2026-10-26 and not integrable through a public API: the Agenzia delle Entrate "Fatture e
+Corrispettivi" portal (a direct SdICoop/SFTP channel needs accreditation as a transmitter), Danea Easyfatt
+(file import/export only), Qonto and Namirial e-invoicing (no public SDI API), TeamSystem/TS Digital (partner
+programme only). CloudFinance has an API whose sandbox is enabled by e-mail and whose sending details could
+not be verified, so it is not included. Adding a provider means implementing `SdiProvider` in a new package:
+see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Development
 

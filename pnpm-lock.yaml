@@ -60,14 +60,61 @@ importers:
         specifier: workspace:*
         version: link:../packages/core
 
-  packages/cli:
+  packages/acube:
     dependencies:
       '@massimiliano-dev/fatturapa-core':
         specifier: workspace:^
         version: link:../core
+      undici:
+        specifier: ^8.12.3
+        version: 8.12.3
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@massimiliano-dev/fatturapa-fixtures':
+        specifier: workspace:*
+        version: link:../../fixtures
+
+  packages/aruba:
+    dependencies:
+      '@massimiliano-dev/fatturapa-core':
+        specifier: workspace:^
+        version: link:../core
+      undici:
+        specifier: ^8.12.3
+        version: 8.12.3
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@massimiliano-dev/fatturapa-fixtures':
+        specifier: workspace:*
+        version: link:../../fixtures
+
+  packages/cli:
+    dependencies:
+      '@massimiliano-dev/fatturapa-acube':
+        specifier: workspace:^
+        version: link:../acube
+      '@massimiliano-dev/fatturapa-aruba':
+        specifier: workspace:^
+        version: link:../aruba
+      '@massimiliano-dev/fatturapa-core':
+        specifier: workspace:^
+        version: link:../core
+      '@massimiliano-dev/fatturapa-fattura-elettronica-api':
+        specifier: workspace:^
+        version: link:../fattura-elettronica-api
       '@massimiliano-dev/fatturapa-fattureincloud':
         specifier: workspace:^
         version: link:../fattureincloud
+      '@massimiliano-dev/fatturapa-invoicetronic':
+        specifier: workspace:^
+        version: link:../invoicetronic
+      '@massimiliano-dev/fatturapa-keliweb':
+        specifier: workspace:^
+        version: link:../keliweb
       '@massimiliano-dev/fatturapa-openapi-it':
         specifier: workspace:^
         version: link:../openapi-it
@@ -95,7 +142,55 @@ importers:
         specifier: workspace:*
         version: link:../../fixtures
 
+  packages/fattura-elettronica-api:
+    dependencies:
+      '@massimiliano-dev/fatturapa-core':
+        specifier: workspace:^
+        version: link:../core
+      undici:
+        specifier: ^8.12.3
+        version: 8.12.3
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@massimiliano-dev/fatturapa-fixtures':
+        specifier: workspace:*
+        version: link:../../fixtures
+
   packages/fattureincloud:
+    dependencies:
+      '@massimiliano-dev/fatturapa-core':
+        specifier: workspace:^
+        version: link:../core
+      undici:
+        specifier: ^8.12.3
+        version: 8.12.3
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@massimiliano-dev/fatturapa-fixtures':
+        specifier: workspace:*
+        version: link:../../fixtures
+
+  packages/invoicetronic:
+    dependencies:
+      '@massimiliano-dev/fatturapa-core':
+        specifier: workspace:^
+        version: link:../core
+      undici:
+        specifier: ^8.12.3
+        version: 8.12.3
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
+    devDependencies:
+      '@massimiliano-dev/fatturapa-fixtures':
+        specifier: workspace:*
+        version: link:../../fixtures
+
+  packages/keliweb:
     dependencies:
       '@massimiliano-dev/fatturapa-core':
         specifier: workspace:^

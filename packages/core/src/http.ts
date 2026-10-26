@@ -61,6 +61,13 @@ export interface HttpClientOptions {
   dispatcher?: Dispatcher;
   /** `User-Agent` header. */
   userAgent?: string;
+  /**
+   * Called once when a request gets 401, before retrying it a single time (e.g. to drop a cached
+   * token). It receives the Authorization value that was rejected, so that a token renewed meanwhile by
+   * another request is not discarded. A 401 means the request was not processed, so the retry cannot
+   * duplicate it.
+   */
+  onUnauthorized?: (rejectedAuthorization: string | undefined) => void | Promise<void>;
 }
 
 export interface HttpRequest {
@@ -142,7 +149,12 @@ export function retryAfterSeconds(value: string | string[] | undefined): number 
  * - the token is never logged or put into errors; error bodies are redacted and truncated.
  */
 export class HttpClient {
-  readonly #options: Required<Omit<HttpClientOptions, 'dispatcher' | 'userAgent'>> & { userAgent?: string };
+  readonly #options: Required<Omit<HttpClientOptions, 'dispatcher' | 'userAgent' | 'onUnauthorized'>> & {
+    userAgent?: string;
+    onUnauthorized?: (rejectedAuthorization: string | undefined) => void | Promise<void>;
+  };
+  /** Authorization value sent for each response; kept out of the response object so it is never logged. */
+  readonly #sentAuthorization = new WeakMap<HttpResponse, string | undefined>();
   readonly #base: URL;
   readonly #dispatcher: Dispatcher;
   readonly #ownsDispatcher: boolean;
@@ -164,6 +176,7 @@ export class HttpClient {
       maxRetries,
       maxRetryWaitSeconds: options.maxRetryWaitSeconds ?? 30,
       ...(options.userAgent === undefined ? {} : { userAgent: options.userAgent }),
+      ...(options.onUnauthorized === undefined ? {} : { onUnauthorized: options.onUnauthorized }),
     };
     this.#ownsDispatcher = options.dispatcher === undefined;
     this.#dispatcher =
@@ -183,8 +196,14 @@ export class HttpClient {
   async send(req: HttpRequest): Promise<HttpResponse> {
     const attempts = req.method === 'GET' ? this.#options.maxRetries + 1 : 1;
     let last: HttpResponse | undefined;
+    let reauthenticated = false;
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
       last = await this.#once(req);
+      if (last.status === 401 && this.#options.onUnauthorized && !reauthenticated) {
+        reauthenticated = true;
+        await this.#options.onUnauthorized(this.#sentAuthorization.get(last));
+        last = await this.#once(req);
+      }
       if (!RETRYABLE.has(last.status) || attempt === attempts) return last;
       const wait = retryAfterSeconds(last.headers['retry-after']) ?? 2 ** attempt;
       if (wait > this.#options.maxRetryWaitSeconds) return last;
@@ -195,10 +214,19 @@ export class HttpClient {
 
   async #once(req: HttpRequest): Promise<HttpResponse> {
     const basePath = this.#base.pathname.replace(/\/$/, '');
-    if (!req.path.startsWith('/') || req.path.includes('//') || /(^|\/)\.\.?(\/|$)/.test(req.path)) {
+    if (
+      !req.path.startsWith('/') ||
+      req.path.includes('//') ||
+      req.path.includes('\\') ||
+      /%2e/i.test(req.path) ||
+      /(^|\/)\.\.?(\/|$)/.test(req.path) ||
+      /[?#\s]/.test(req.path)
+    ) {
       throw new RangeError('Invalid request path');
     }
     const url = new URL(`${basePath}${req.path}`, this.#base.origin);
+    // Whatever the URL parser normalised (dot segments, backslashes) must not change the path.
+    if (url.pathname !== `${basePath}${req.path}`) throw new RangeError('Invalid request path');
     for (const [key, value] of Object.entries(req.query ?? {})) {
       if (value === undefined) continue;
       if (Array.isArray(value)) for (const v of value) url.searchParams.append(key, v);
@@ -263,7 +291,7 @@ export class HttpClient {
       );
     }
     const buffer = Buffer.concat(chunks, size);
-    return {
+    const result: HttpResponse = {
       status: response.statusCode,
       headers: response.headers,
       body: buffer,
@@ -276,6 +304,8 @@ export class HttpClient {
         }
       },
     };
+    this.#sentAuthorization.set(result, authorization);
+    return result;
   }
 
   async close(): Promise<void> {

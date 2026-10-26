@@ -95,6 +95,31 @@ describe('fatturapa CLI', () => {
     expect(await runCli(['send', valid, '--provider', 'openapi-it', '--token', 'x'], io().io)).toBe(2);
   });
 
+  it('names the environment variables of every provider and maps --env', async () => {
+    const cases: [string, string][] = [
+      ['invoicetronic', 'INVOICETRONIC_API_KEY'],
+      ['acube', 'ACUBE_EMAIL and ACUBE_PASSWORD'],
+      ['fattura-elettronica-api', 'FEA_CLIENT_ID and FEA_CLIENT_SECRET'],
+      ['aruba', 'ARUBA_USERNAME and ARUBA_PASSWORD'],
+    ];
+    for (const [name, vars] of cases) {
+      const t = io();
+      expect(await runCli(['status', '1', '--provider', name], t.io)).toBe(2);
+      expect(t.err()).toContain(vars);
+    }
+    const live = io({ INVOICETRONIC_API_KEY: 'ik_test_x' });
+    expect(
+      await runCli(
+        ['status', '1', '--provider', 'invoicetronic', '--env', 'production', '--confirm-production'],
+        live.io,
+      ),
+    ).toBe(2);
+    expect(live.err()).toContain('live environment');
+    const fic = io();
+    expect(await runCli(['send', valid, '--provider', 'fattureincloud', '--no-validate'], fic.io)).toBe(2);
+    expect(fic.err()).toContain('builds its own XML');
+  });
+
   it('refuses to send invalid invoices and supports dry runs', async () => {
     const bad = io({ OPENAPI_IT_TOKEN: 'x' });
     expect(
