@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-invoicetronic",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Invoicetronic provider for fatturapa-client: send FatturaPA XML to the SDI with idempotency keys, status updates, received invoices, HMAC-SHA256 webhook verification, sandbox.",
   "license": "MIT",
   "author": "Massimiliano Polce",

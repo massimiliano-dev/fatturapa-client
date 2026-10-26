@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-aruba",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Aruba Fatturazione Elettronica provider for fatturapa-client: upload XML (optionally auto-signed), status, SDI notifications, received invoices, callbacks, demo simulator.",
   "license": "MIT",
   "author": "Massimiliano Polce",

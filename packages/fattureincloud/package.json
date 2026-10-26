@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-fattureincloud",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Fatture in Cloud API v2 provider for fatturapa-client: issue and send e-invoices to SDI, track status, read received invoices, verify webhooks (ES256).",
   "license": "MIT",
   "author": "Massimiliano Polce",

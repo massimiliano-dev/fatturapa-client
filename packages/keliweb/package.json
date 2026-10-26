@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-keliweb",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Keliweb Fatturazione Elettronica API 2.0 provider for fatturapa-client: send FatturaPA XML, invoice status and history, SDI notifications, received invoices.",
   "license": "MIT",
   "author": "Massimiliano Polce",

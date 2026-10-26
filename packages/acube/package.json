@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-acube",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A-Cube API provider for fatturapa-client: send FatturaPA XML to the SDI, status and notifications, received invoices, Ed25519 (RFC 9421) webhook verification, sandbox.",
   "license": "MIT",
   "author": "Massimiliano Polce",

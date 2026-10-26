@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-validator",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Local XSD validation of FatturaPA XML against the official Agenzia delle Entrate schema (libxml2 as WebAssembly, no native build).",
   "license": "MIT",
   "author": "Massimiliano Polce",
