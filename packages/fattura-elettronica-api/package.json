@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-fattura-elettronica-api",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Fattura Elettronica API (fattura-elettronica-api.it) provider for fatturapa-client: send XML, status, notifications, received invoices, webhooks, test environment.",
   "license": "MIT",
   "author": "Massimiliano Polce",

@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-openapi-it",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Openapi.it SDI provider for fatturapa-client: send FatturaPA XML to SDI, receive notifications and supplier invoices via callbacks, sandbox simulation.",
   "license": "MIT",
   "author": "Massimiliano Polce",

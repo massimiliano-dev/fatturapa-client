@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "FatturaPA (Italian e-invoice) core: typed model, XML builder and parser, code tables, business-rule validation, SDI notifications, CAdES (.p7m) unwrapping, redaction and the SdiProvider interface.",
   "license": "MIT",
   "author": "Massimiliano Polce",

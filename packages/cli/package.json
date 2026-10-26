@@ -1,6 +1,6 @@
 {
   "name": "@massimiliano-dev/fatturapa-cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The fatturapa command: build, validate and inspect FatturaPA XML, parse SDI notifications, send through a provider.",
   "license": "MIT",
   "author": "Massimiliano Polce",
