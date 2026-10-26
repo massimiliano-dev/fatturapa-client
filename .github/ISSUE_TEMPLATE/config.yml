@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/massimiliano-dev/fatturapa-client/security/advisories/new
+    about: Report privately. Do not open a public issue.
+  - name: Official SDI documentation (Agenzia delle Entrate)
+    url: https://www.fatturapa.gov.it/it/norme-e-regole/documentazione-fattura-elettronica/formato-fatturapa/
+    about: Questions about the SDI itself, the XSD or the technical specifications. This project is unofficial.

@@ -1,0 +1,61 @@
+# Security
+
+## Reporting a vulnerability
+
+Please do **not** open a public issue. Use GitHub's
+[private vulnerability reporting](https://github.com/massimiliano-dev/fatturapa-client/security/advisories/new).
+You will get an answer within 7 days. Fixes are released as patch versions with an advisory.
+
+**Never include real invoices, VAT numbers, fiscal codes, IBANs or tokens in a report.** Reproduce with the
+synthetic fixtures in `fixtures/`.
+
+Supported versions: the latest minor release of 0.x. Vulnerabilities in the SDI or in a provider's service
+must be reported to the Agenzia delle Entrate or to that provider.
+
+## Assets
+
+- **Provider credentials**: Openapi.it bearer tokens and API keys, Fatture in Cloud OAuth client secrets,
+  access and refresh tokens. With them anyone can issue invoices in your name, which has tax consequences.
+- **Personal data** (GDPR): names, fiscal codes and addresses of sole traders and consumers, IBANs, PEC
+  addresses, invoice contents.
+- **Integrity** of what is sent to the SDI: totals, VAT, recipients.
+
+## Threat model
+
+| Threat                              | Mitigation                                                                                                                                                                                                                                                                                                                                                                                                                    | Where                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| Token leakage                       | Tokens are passed as values or functions (secret-store friendly) and never logged or put into errors. Every error message goes through `redact()` (bearer/Basic schemes, JWTs, `access_token`/`client_secret`/`api_key` pairs). The CLI reads tokens only from environment variables, never from flags. `createOpenapiItToken` defaults to SDI-only scopes and a 30-day TTL.                                                  | `core`, providers, `cli` |
+| Token sent to the wrong host        | HTTPS-only base URLs without credentials; certificate verification never disabled; TLS ≥ 1.2; redirects are never followed (tested: a 302 to another host is an error); request paths are built from encoded segments and cannot leave the configured origin.                                                                                                                                                                 | `core/http`              |
+| Personal data in logs and errors    | `redact()` masks fiscal codes (with omocodia), IBANs, `IT` VAT numbers, e-mail/PEC addresses, invoice and XML documents, long base64 blobs. Underlying errors are reduced to name, code and redacted message. libxml2 messages have quoted values masked and source lines dropped. `fatturapa inspect` masks identifiers and omits natural persons' names. ESLint forbids `console`.                                          | all packages             |
+| XXE, entity expansion, parser abuse | `assertSafeXml()` runs before any parser: `<!DOCTYPE`/`<!ENTITY` refused, UTF-8 only, 5 MiB cap (the SDI limit). Well-formedness check, nesting limit 64, reserved element names (`__proto__`, `constructor`, `prototype`) refused. The parser copies only element names from a fixed schema map. libxml2 runs as WebAssembly with an in-memory file system and `--nonet`.                                                    | `core`, `validator`      |
+| Malicious `.p7m`                    | Bounded BER/DER reader: size, depth (32) and node-count (100k) limits; lengths are checked against the container; only CMS SignedData with id-data content is accepted. **The signature is not verified** (see below).                                                                                                                                                                                                        | `core/p7m`               |
+| Forged webhooks / callbacks         | Fatture in Cloud: ES256 JWT verified with the published key, algorithm fixed (no `none`/HMAC downgrade), `iss`, `aud` (your sink URL), `exp`/`iat` with skew, optional `aid`, and `jti`/`sub` bound to the CloudEvent id/subject. Openapi.it sends only a static secret: constant-time comparison, ≥ 32 characters enforced, and the docs require re-reading the invoice through the API before acting ("fetch, then trust"). | providers                |
+| Oversized or hostile responses      | Response bodies capped (10 MiB default) and aborted beyond; JSON validated with bounded zod schemas; provider messages redacted and truncated; timeouts on connect, headers and body.                                                                                                                                                                                                                                         | `core/http`, providers   |
+| Duplicate invoices on retry         | `send` is never retried automatically (only idempotent GETs are). Documented: check the status or list invoices before re-sending after a timeout (SDI 00404).                                                                                                                                                                                                                                                                | providers                |
+| Wrong numbers                       | Exact decimal arithmetic (`bigint`), no floating point; values with more decimals than the XSD allows are refused, not rounded silently; `checkBusinessRules` reproduces the SDI tolerances (00421 ±0.01, 00422 ±1.00, 00423 ±0.01).                                                                                                                                                                                          | `core`                   |
+| Acting on production by mistake     | Providers take an explicit environment; Openapi.it `simulate` is refused in production; the CLI requires `--confirm-production`, and always for Fatture in Cloud (no sandbox).                                                                                                                                                                                                                                                | providers, `cli`         |
+| Tampered official schemas           | `pnpm sync:schemas` writes a file only if its SHA-256 matches the pin; the loader re-checks the hashes before every use (tested with a tampered copy). The W3C signature schema's DOCTYPE is removed in memory so no DTD is ever processed.                                                                                                                                                                                   | `validator`              |
+| Supply chain                        | SHA-pinned GitHub Actions, read-only workflow permissions, Dependabot, CodeQL `security-extended`, `pnpm audit`, npm provenance, no install scripts or native modules. Secrets scan in CI (keys, JWTs, fiscal codes, IBANs, `.env`). Live tests never run for pull requests and use sandboxes only.                                                                                                                           | CI                       |
+
+### What this library does not do
+
+- **Verify signatures** of `.p7m` files or SDI notifications. The SDI verifies invoice signatures on
+  reception; trust content according to the channel it came from (your provider's authenticated API or a
+  verified webhook), or use a qualified verification service.
+- **Sign** invoices: use the provider's signature service or your own qualified signature device.
+- **Store data at rest**, manage retention, or replace legal preservation ("conservazione a norma").
+- **Replace the SDI checks** that need the tax registry or SDI history.
+- **Protect against a compromised host.**
+
+## Hardening checklist
+
+1. Keep tokens and client secrets in a secret manager; pass a function to the providers so they can rotate.
+2. Give Openapi.it tokens only the SDI scopes and a short TTL; request only the Fatture in Cloud scopes you
+   use; store refresh tokens encrypted.
+3. Serve webhook endpoints over HTTPS; verify every request; deduplicate on the event id; fetch the
+   resources through the API before acting.
+4. Never log request or response bodies (reverse proxies, APM, error trackers). If you must, use
+   `redactValue()`.
+5. Run `computeTotals`, `checkBusinessRules` and the XSD validation before sending.
+6. Use sandboxes and synthetic data in development and CI. Fatture in Cloud: use a dedicated test company.
+7. Review the diff of any official schema before updating its pin.

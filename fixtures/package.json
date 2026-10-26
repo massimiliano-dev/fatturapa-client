@@ -1,0 +1,17 @@
+{
+  "name": "@massimiliano-dev/fatturapa-fixtures",
+  "version": "0.0.0",
+  "private": true,
+  "description": "SYNTHETIC test fixtures (fake companies, fake VAT numbers and fiscal codes, generated invoices). Never real data.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@massimiliano-dev/source": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@massimiliano-dev/fatturapa-core": "workspace:*"
+  }
+}

@@ -1,0 +1,8 @@
+dist
+coverage
+vendor
+pnpm-lock.yaml
+CHANGELOG.md
+.changeset/*.md
+packages/core/src/codes.ts
+packages/core/src/sdi-errors.ts

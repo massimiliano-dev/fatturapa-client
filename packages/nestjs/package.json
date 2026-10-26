@@ -1,0 +1,68 @@
+{
+  "name": "@massimiliano-dev/fatturapa-nestjs",
+  "version": "0.0.0",
+  "description": "NestJS module for fatturapa-client: injects an SdiProvider and the FatturaPA validators.",
+  "license": "MIT",
+  "author": "Massimiliano Polce",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/massimiliano-dev/fatturapa-client.git",
+    "directory": "packages/nestjs"
+  },
+  "homepage": "https://github.com/massimiliano-dev/fatturapa-client#readme",
+  "bugs": "https://github.com/massimiliano-dev/fatturapa-client/issues",
+  "keywords": [
+    "fatturapa",
+    "fattura-elettronica",
+    "sdi",
+    "sistema-di-interscambio",
+    "e-invoicing",
+    "italy",
+    "xml",
+    "nestjs"
+  ],
+  "engines": {
+    "node": ">=22.19"
+  },
+  "exports": {
+    ".": {
+      "@massimiliano-dev/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@massimiliano-dev/fatturapa-core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^12.0.0",
+    "@nestjs/core": "^12.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.1.0"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^12.0.0",
+    "@nestjs/core": "^12.0.0",
+    "@nestjs/testing": "^12.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0",
+    "@massimiliano-dev/fatturapa-fixtures": "workspace:*"
+  }
+}

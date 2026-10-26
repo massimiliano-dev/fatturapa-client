@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@massimiliano-dev/fatturapa-core",
+      "@massimiliano-dev/fatturapa-validator",
+      "@massimiliano-dev/fatturapa-fattureincloud",
+      "@massimiliano-dev/fatturapa-openapi-it",
+      "@massimiliano-dev/fatturapa-nestjs",
+      "@massimiliano-dev/fatturapa-cli"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": ["@massimiliano-dev/fatturapa-fixtures"]
+}

@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "customConditions": ["@massimiliano-dev/source"]
+  },
+  "include": [
+    "packages/*/src",
+    "packages/*/test",
+    "packages/*/scripts",
+    "fixtures/src",
+    "vitest.config.ts",
+    "examples"
+  ]
+}

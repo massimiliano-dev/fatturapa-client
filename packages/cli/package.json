@@ -1,0 +1,64 @@
+{
+  "name": "@massimiliano-dev/fatturapa-cli",
+  "version": "0.0.0",
+  "description": "The fatturapa command: build, validate and inspect FatturaPA XML, parse SDI notifications, send through a provider.",
+  "license": "MIT",
+  "author": "Massimiliano Polce",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/massimiliano-dev/fatturapa-client.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/massimiliano-dev/fatturapa-client#readme",
+  "bugs": "https://github.com/massimiliano-dev/fatturapa-client/issues",
+  "keywords": [
+    "fatturapa",
+    "fattura-elettronica",
+    "sdi",
+    "sistema-di-interscambio",
+    "e-invoicing",
+    "italy",
+    "xml",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=22.19"
+  },
+  "exports": {
+    ".": {
+      "@massimiliano-dev/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "@massimiliano-dev/fatturapa-core": "workspace:^",
+    "@massimiliano-dev/fatturapa-validator": "workspace:^",
+    "@massimiliano-dev/fatturapa-fattureincloud": "workspace:^",
+    "@massimiliano-dev/fatturapa-openapi-it": "workspace:^",
+    "commander": "^15.0.0"
+  },
+  "bin": {
+    "fatturapa": "./dist/bin.js"
+  },
+  "devDependencies": {
+    "@massimiliano-dev/fatturapa-fixtures": "workspace:*"
+  }
+}

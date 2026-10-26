@@ -1,0 +1,58 @@
+{
+  "name": "@massimiliano-dev/fatturapa-core",
+  "version": "0.0.0",
+  "description": "FatturaPA (Italian e-invoice) core: typed model, XML builder and parser, code tables, business-rule validation, SDI notifications, CAdES (.p7m) unwrapping, redaction and the SdiProvider interface.",
+  "license": "MIT",
+  "author": "Massimiliano Polce",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/massimiliano-dev/fatturapa-client.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/massimiliano-dev/fatturapa-client#readme",
+  "bugs": "https://github.com/massimiliano-dev/fatturapa-client/issues",
+  "keywords": [
+    "fatturapa",
+    "fattura-elettronica",
+    "sdi",
+    "sistema-di-interscambio",
+    "e-invoicing",
+    "italy",
+    "xml",
+    "redaction"
+  ],
+  "engines": {
+    "node": ">=22.19"
+  },
+  "exports": {
+    ".": {
+      "@massimiliano-dev/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.3.5",
+    "undici": "^8.12.3"
+  },
+  "devDependencies": {
+    "@massimiliano-dev/fatturapa-fixtures": "workspace:*"
+  }
+}

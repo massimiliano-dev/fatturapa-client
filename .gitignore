@@ -1,0 +1,31 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.DS_Store
+
+# Secrets: API keys, tokens, certificates, environment files.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*.csr
+*.p7m
+secrets/
+certs/
+
+# Downloaded official schemas (pnpm sync:schemas). Never committed.
+vendor/
+
+# Real invoices and personal data must never enter the repository.
+data/
+real-data/
+private/
+*.real.xml
+out/
