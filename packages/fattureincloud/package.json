@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@massimiliano-dev/fatturapa-core": "workspace:^",
-    "undici": "^8.12.3",
+    "undici": "^8.12.4",
     "zod": "^4.6.7"
   },
   "devDependencies": {
